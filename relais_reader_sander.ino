@@ -1,49 +1,36 @@
-#include <Wire.h>
+#define FEED12V_SWITCH        22
+#define LOW_HIGH_COIL_SWITCH  23
 
+#define LOW_HIGH_CONTACT_SWITCH1 24
+#define LOW_HIGH_CONTACT_SWITCH2 25
+#define LOW_HIGH_CONTACT_SWITCH3 26
 
-#define PIN_MODULE1_RELAIS1 41
-#define PIN_MODULE1_RELAIS2 42
-#define PIN_MODULE1_RELAIS3 43
-#define PIN_MODULE1_RELAIS4 44
-static const int MODULE1[] = { PIN_MODULE1_RELAIS1, PIN_MODULE1_RELAIS2, PIN_MODULE1_RELAIS3, PIN_MODULE1_RELAIS4 };
+#define RED_LED     36
+#define ORANGE_LED  38
+#define GREEN_LED   40
 
-#define PIN_MODULE2_RELAIS1 45
-#define PIN_MODULE2_RELAIS2 46
-#define PIN_MODULE2_RELAIS3 47
-#define PIN_MODULE2_RELAIS4 48
-static const int MODULE2[] = { PIN_MODULE2_RELAIS1, PIN_MODULE2_RELAIS2, PIN_MODULE2_RELAIS3, PIN_MODULE2_RELAIS4 };
+#define START_BUTTON 42
 
-#define PIN_MODULE3_RELAIS1 49
-#define PIN_MODULE3_RELAIS2 50
-#define PIN_MODULE3_RELAIS3 51
-#define PIN_MODULE3_RELAIS4 52
-static const int MODULE3[] = { PIN_MODULE3_RELAIS1, PIN_MODULE3_RELAIS2, PIN_MODULE3_RELAIS3, PIN_MODULE3_RELAIS4 };
-
-#define PIN_MODULE4_RELAIS1 53
-#define PIN_MODULE4_RELAIS2 54
-#define PIN_MODULE4_RELAIS3 55
-#define PIN_MODULE4_RELAIS4 56
-static const int MODULE4[] = { PIN_MODULE4_RELAIS1, PIN_MODULE4_RELAIS2, PIN_MODULE4_RELAIS3, PIN_MODULE4_RELAIS4 };
-
-#define SERIAL_PORT_A0 78
-#define SERIAL_PORT_A1 79
-#define SERIAL_PORT_A2 80
+#define SERIAL_PORT_A0 54
+#define SERIAL_PORT_A1 55
+#define SERIAL_PORT_A2 56
 #define SERIAL_PORT_A3 81
 
 static const int V_IN = 5;
 static const int ANALOG_SCALE = 1024;
-static const int RESISTOR_REFERENCE = 1000;
+static const int RESISTOR_REFERENCE = 10;
 static const int FRACTION_RESULT_FACTOR = 1;
 
 static const int DELAY = 10000; // 10 seconds
 void setup() {
+  // Document point 1
   // put your setup code here, to run once:
-  setPinsAsOutput(MODULE1, 4);
-  setPinsAsOutput(MODULE2, 4);
-  setPinsAsOutput(MODULE3, 4);
-  setPinsAsOutput(MODULE4, 4);
+  int pins[] = {FEED12V_SWITCH, LOW_HIGH_COIL_SWITCH, LOW_HIGH_CONTACT_SWITCH1, LOW_HIGH_CONTACT_SWITCH2, LOW_HIGH_CONTACT_SWITCH3};
+  setPinsAsOutput(pins, 5);
 
   enableAnalogInput();
+//  enable display
+  // set start led on
 }
 void setPinsAsOutput(const int pins[], int length) {  
   for (int i = 0; i < length; i++) {
@@ -56,40 +43,89 @@ void enableAnalogInput() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  enableModule(MODULE1);
-  float resistanceOhm1 = calculateOhm(SERIAL_PORT_A0);
-  disableModule(MODULE1);
+  if (!readStartButton(START_BUTTON)) {
+      return;
+  }
+// Document point 2
+  // oranje led aan
 
-  enableModule(MODULE2);
-  float resistanceOhm2 = calculateOhm(SERIAL_PORT_A1);
-  disableModule(MODULE2);
-  
-  enableModule(MODULE3);
-  float resistanceOhm3 = calculateOhm(SERIAL_PORT_A2);
-  disableModule(MODULE3);
+// Document point 3
+// Document point 3.a
+// measure relais 18/19 via A0
+  float resistanceOhm18And19 = calculateOhm(SERIAL_PORT_A0);
+// measure relais 16/17 via A1 
+  float resistanceOhm16And17 = calculateOhm(SERIAL_PORT_A1);
+// measure relais 12/13 via A2
+  float resistanceOhm12And13 = calculateOhm(SERIAL_PORT_A2);
 
-  enableModule(MODULE4);
-  float resistanceOhm4 = calculateOhm(SERIAL_PORT_A3);
-  disableModule(MODULE4);
+// Document point 3.b
+// relais 1 HIGH pin 22
+  digitalWrite(FEED12V_SWITCH, HIGH); // K1
+// Document point 3.c
+// measure relais 19/20 via A0
+  float resistanceOhm19And20 = calculateOhm(SERIAL_PORT_A0);
+// measure relais 14/15 via A1 
+  float resistanceOhm14And15 = calculateOhm(SERIAL_PORT_A1);
+// Document point 3.d  
+  digitalWrite(FEED12V_SWITCH, LOW); // K1
+
+// Document point 3.e
+  pinHighAndWait(LOW_HIGH_CONTACT_SWITCH1);
+  pinHighAndWait(LOW_HIGH_CONTACT_SWITCH2);
+  pinHighAndWait(LOW_HIGH_CONTACT_SWITCH3);
+// Document point 3.f
+// measure relais 68/69 via A0
+  float resistanceOhm68And69 = calculateOhm(SERIAL_PORT_A0);
+// measure relais 66/67 via A1 
+  float resistanceOhm66And67 = calculateOhm(SERIAL_PORT_A1);
+// measure relais 62/63 via A2
+  float resistanceOhm62And63 = calculateOhm(SERIAL_PORT_A2);
+
+  // Document point 3.g
+  pinHighAndWait(LOW_HIGH_COIL_SWITCH);
+  pinHighAndWait(FEED12V_SWITCH);
+
+  // Document point 3.h
+// measure relais 69/70 via A0
+  float resistanceOhm69And70 = calculateOhm(SERIAL_PORT_A0);
+// measure relais 64/65 via A1 
+  float resistanceOhm64And65 = calculateOhm(SERIAL_PORT_A1);
+
+  // Document point 3.h
+  pinLowAndWait(FEED12V_SWITCH);
+  pinLowAndWait(LOW_HIGH_COIL_SWITCH);
+  pinLowAndWait(LOW_HIGH_CONTACT_SWITCH1); 
+  pinLowAndWait(LOW_HIGH_CONTACT_SWITCH2);
+  pinLowAndWait(LOW_HIGH_CONTACT_SWITCH3);
+
+  // calculate tresshold
+
+  // show green led if success
+
+  // show failed contacts on display
+  // show failed enable red led
+  // tresshold 10 ohm
   
-  Serial.println(resistanceOhm1);
-  Serial.println(resistanceOhm2);
-  Serial.println(resistanceOhm3);
-  Serial.println(resistanceOhm4);
+//  Serial.println(resistanceOhm1);
+//  Serial.println(resistanceOhm2);
+//  Serial.println(resistanceOhm3);
+//  Serial.println(resistanceOhm4);
   delay(DELAY);
 }
 
-void enableModule(const int modulePins[4]) {
-  for (int i = 0; i < 4; i++) {
-    digitalWrite(modulePins[i], HIGH);       // sets the digital pin on
-  }
+bool readStartButton(const int startButtonPin) {
+  return true;
 }
 
-void disableModule(const int modulePins[4]) {
-  for (int i = 0; i < 4; i++) {
-    digitalWrite(modulePins[i], LOW);       // sets the digital pin off
-  }
+
+void pinHighAndWait(const int pin) {
+  digitalWrite(pin, HIGH);       // sets the digital pin on
+  delay(100);
+}
+
+void pinLowAndWait(const int pin) {
+  digitalWrite(pin, LOW);       // sets the digital pin off
+  delay(100);
 }
 
 float calculateOhm(const int analogPin) {

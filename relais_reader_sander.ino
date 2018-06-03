@@ -24,32 +24,38 @@
 #define FRACTION_RESULT_FACTOR 1
 #define MARGIN 10
 
-#define DELAY 10000 // 10 seconds
+#define PIN_DELAY 500
+#define STEP_DELAY 1000
 
 U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_DEV_1); // Dev 0, Fast I2C / TWI
-
 
 void setup() {
   // Document point 1
   // enable relais pins
+  Serial.println("enable all relais");
   int pins[] = {FEED12V_SWITCH, LOW_HIGH_COIL_SWITCH, LOW_HIGH_CONTACT_SWITCH1, LOW_HIGH_CONTACT_SWITCH2, LOW_HIGH_CONTACT_SWITCH3};
   setPinsAsOutput(pins, 5);
 
   // enable leds pins
+  Serial.println("enable leds");
   pinMode(ORANGE_LED, OUTPUT);
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
 
   // enable button pins
+  Serial.println("enable start button");
   pinMode(START_BUTTON, INPUT);
 
   // enable analog input
+  Serial.println("serial enabled");
   Serial.begin(9600);
 
   // turn on the green led to indicate the system is ready
+  Serial.println("turn green led on and draw Start");
   pinHighAndWait(GREEN_LED);
   draw("Druk start");
 }
+
 void setPinsAsOutput(const int pins[], int length) {
   for (int i = 0; i < length; i++) {
     pinMode(pins[i], OUTPUT);          // sets the digital pin as output
@@ -58,68 +64,73 @@ void setPinsAsOutput(const int pins[], int length) {
 }
 
 void loop() {
-  Serial.println("start");
   if (!readStartButton(START_BUTTON)) {
       Serial.println("Start button not pressed");
       return;
   }
+  Serial.println("start");
   pinLowAndWait(RED_LED);
   draw("Meting loopt");
 // Document point 2
-  // oranje led aan
+  Serial.println("draw on screen and turn ORANGE LED ON");
   pinHighAndWait(ORANGE_LED);
 // Document point 3
 // Document point 3.a
-// measure relais 18/19 via A0
+  Serial.println("measure relais 18/19 via A0");
   float resistanceOhm18And19 = calculateOhm(SERIAL_PORT_A0);
-// measure relais 16/17 via A1
+  Serial.println("measure relais 16/17 via A1");
   float resistanceOhm16And17 = calculateOhm(SERIAL_PORT_A1);
-// measure relais 12/13 via A2
+  Serial.println("measure relais 12/13 via A2");
   float resistanceOhm12And13 = calculateOhm(SERIAL_PORT_A2);
-  delay(1000);
+  delay(STEP_DELAY);
 
 // Document point 3.b
-// relais 1 HIGH pin 22
+  Serial.println("TURN FEEDV12 ON");
   relaisOnAndWait(FEED12V_SWITCH); // K1
-  delay(1000);
+  delay(STEP_DELAY);
 
 // Document point 3.c
-// measure relais 19/20 via A0
+  Serial.println("measure relais 19/20 via A0");
   float resistanceOhm19And20 = calculateOhm(SERIAL_PORT_A0);
-// measure relais 14/15 via A1
+  Serial.println("measure relais 14/15 via A1");
   float resistanceOhm14And15 = calculateOhm(SERIAL_PORT_A1);
-  delay(1000);
+  delay(STEP_DELAY);
 
 // Document point 3.d
-  relaisOffAndWait(FEED12V_SWITCH); // K1
+  Serial.println("TURN FEEDV12 OFF");
+  relaisOffAndWait(FEED12V_SWITCH);
 
 // Document point 3.e
+  Serial.println("TURN LOW_HIGH_CONTACT_SWITCHES ON");
   relaisOnAndWait(LOW_HIGH_CONTACT_SWITCH1);
   relaisOnAndWait(LOW_HIGH_CONTACT_SWITCH2);
   relaisOnAndWait(LOW_HIGH_CONTACT_SWITCH3);
-  delay(1000);
+  delay(STEP_DELAY);
 
 // Document point 3.f
-// measure relais 68/69 via A0
+  Serial.println("measure relais 68/69 via A0");
   float resistanceOhm68And69 = calculateOhm(SERIAL_PORT_A0);
-// measure relais 66/67 via A1
+  Serial.println("measure relais 66/67 via A1");
   float resistanceOhm66And67 = calculateOhm(SERIAL_PORT_A1);
-// measure relais 62/63 via A2
+  Serial.println("measure relais 62/63 via A2");
   float resistanceOhm62And63 = calculateOhm(SERIAL_PORT_A2);
-  delay(1000);
+  delay(STEP_DELAY);
 
   // Document point 3.g
+  Serial.println("COIL HIGH and FEEDV12 ON");
   relaisOnAndWait(LOW_HIGH_COIL_SWITCH);
   relaisOnAndWait(FEED12V_SWITCH);
-  delay(1000);
+  delay(STEP_DELAY);
 
   // Document point 3.h
-// measure relais 69/70 via A0
-  float resistanceOhm69And70 = calculateOhm(SERIAL_PORT_A0);
-// measure relais 64/65 via A1
-  float resistanceOhm64And65 = calculateOhm(SERIAL_PORT_A1);
-  delay(1000);
+  Serial.println("measure relais 69/70 via A0");
 
+  float resistanceOhm69And70 = calculateOhm(SERIAL_PORT_A0);
+  Serial.println("measure relais 64/65 via A1");
+  float resistanceOhm64And65 = calculateOhm(SERIAL_PORT_A1);
+  delay(STEP_DELAY);
+
+  Serial.println("Turn off relais");
   // Document point 3.h
   relaisOffAndWait(FEED12V_SWITCH);
   relaisOffAndWait(LOW_HIGH_COIL_SWITCH);
@@ -133,68 +144,76 @@ void loop() {
     + resistanceOhm62And63 + resistanceOhm64And65 + resistanceOhm66And67 + resistanceOhm68And69 + resistanceOhm69And70;
 
   if (result < MARGIN) {
+    Serial.println("SUCCESS");
     // show green led if success
     pinHighAndWait(GREEN_LED);
     draw("Klaar!");
   }
   else {
+    Serial.println("FAIL:");
     pinHighAndWait(RED_LED);
-    // calculate tresshold
-    // tresshold 10 ohm
     String str = "";
     if (resistanceOhm12And13 > MARGIN) {
       str += "12/13";
-    }
-    if (resistanceOhm16And17 > MARGIN) {
-      if (str != "")
-        str += " ";
-      str += "16/17";
-    }
-    if (resistanceOhm18And19 > MARGIN) {
-      if (str != "")
-        str += " ";
-      str += "18/19";
+      Serial.println("resistanceOhm12And13" + String(resistanceOhm12And13));
     }
     if (resistanceOhm14And15 > MARGIN) {
       if (str != "")
         str += " ";
       str += "14/15";
+      Serial.println("resistanceOhm14And15" + String(resistanceOhm14And15));
+    }
+    if (resistanceOhm16And17 > MARGIN) {
+      if (str != "")
+        str += " ";
+      str += "16/17";
+      Serial.println("resistanceOhm16And17" + String(resistanceOhm16And17));
+    }
+    if (resistanceOhm18And19 > MARGIN) {
+      if (str != "")
+        str += " ";
+      str += "18/19";
+      Serial.println("resistanceOhm18And19" + String(resistanceOhm18And19));
     }
     if (resistanceOhm19And20 > MARGIN) {
       if (str != "")
         str += " ";
       str += "19/20";
+      Serial.println("resistanceOhm19And20" + String(resistanceOhm19And20));
     }
     if (resistanceOhm62And63 > MARGIN) {
       if (str != "")
         str += " ";
       str += "62/63";
-    }
-    if (resistanceOhm66And67 > MARGIN) {
-      if (str != "")
-        str += " ";
-      str += "66/67";
-    }
-    if (resistanceOhm68And69 > MARGIN) {
-      if (str != "")
-        str += " ";
-      str += "68/69";
+      Serial.println("resistanceOhm62And63" + String(resistanceOhm62And63));
     }
     if (resistanceOhm64And65 > MARGIN) {
       if (str != "")
         str += " ";
       str += "64/65";
+      Serial.println("resistanceOhm64And65" + String(resistanceOhm64And65));
+    }
+    if (resistanceOhm66And67 > MARGIN) {
+      if (str != "")
+        str += " ";
+      str += "66/67";
+      Serial.println("resistanceOhm66And67" + String(resistanceOhm66And67));
+    }
+    if (resistanceOhm68And69 > MARGIN) {
+      if (str != "")
+        str += " ";
+      str += "68/69";
+      Serial.println("resistanceOhm68And69" + String(resistanceOhm68And69));
     }
     if (resistanceOhm69And70 > MARGIN) {
         if (str != "")
           str += " ";
         str += "69/70";
+        Serial.println("resistanceOhm69And70" + String(resistanceOhm69And70));
     }
-
+    Serial.println("Slecht contact: " + str);
     drawTwoLines("Slecht contact", str);
   }
-  Serial.println("Done");
-  delay(2000);
   Serial.println("end");
 }
 
@@ -230,7 +249,7 @@ void relaisOnAndWait(const int pin) {
 
 void pinHighAndWait(const int pin) {
   digitalWrite(pin, HIGH);       // sets the digital pin on
-  delay(500);
+  delay(PIN_DELAY);
 }
 
 void relaisOffAndWait(const int pin) {
@@ -239,7 +258,7 @@ void relaisOffAndWait(const int pin) {
 
 void pinLowAndWait(const int pin) {
   digitalWrite(pin, LOW);       // sets the digital pin off
-  delay(500);
+  delay(PIN_DELAY);
 }
 
 float calculateOhm(const int analogPin) {

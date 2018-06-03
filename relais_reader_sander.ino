@@ -228,8 +228,8 @@ void drawTwoLines(String line1, String line2) {
   do {
     u8g.drawStr(10, 10, line1.c_str()); // print tekst.
     if (line2.length() > 17) {
-      u8g.drawStr(10, 30, line2.substring(0, 16).c_str()); // print tekst. 
-      u8g.drawStr(10, 50, line2.substring(17).c_str()); // print tekst. 
+      u8g.drawStr(10, 30, line2.substring(0, 17).c_str()); // print tekst. 
+      u8g.drawStr(10, 50, line2.substring(18).c_str()); // print tekst. 
     } else {
       u8g.drawStr(10, 30, line2.c_str()); // print tekst.
     }

@@ -237,7 +237,7 @@ void drawTwoLines(String line1, String line2) {
 
 void draw(String text) {
   u8g.firstPage();
-  u8g.setFont(u8g_font_unifont); // font instellen.
+  u8g.setFont(u8g_font_helvR08); // font instellen.
   do {
     u8g.drawStr(10, 32, text.c_str()); // print tekst.
   } while(u8g.nextPage());
@@ -263,7 +263,6 @@ void pinLowAndWait(const int pin) {
 
 float calculateOhm(const int analogPin) {
   int rawValue = analogRead(analogPin);
-  Serial.println(rawValue);
   if (rawValue) {
     float buffer = rawValue * V_IN;
     int vOut = buffer / ANALOG_SCALE;

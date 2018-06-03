@@ -22,6 +22,7 @@
 #define ANALOG_SCALE 1024
 #define RESISTOR_REFERENCE 10
 #define FRACTION_RESULT_FACTOR 1
+#define MARGIN 10
 
 #define DELAY 10000 // 10 seconds
 
@@ -47,6 +48,7 @@ void setup() {
 
   // turn on the green led to indicate the system is ready
   pinHighAndWait(GREEN_LED);
+  draw("Druk start");
 }
 void setPinsAsOutput(const int pins[], int length) {
   for (int i = 0; i < length; i++) {
@@ -59,9 +61,9 @@ void loop() {
   Serial.println("start");
   if (!readStartButton(START_BUTTON)) {
       Serial.println("Start button not pressed");
-      draw("Druk start");
       return;
   }
+  pinLowAndWait(RED_LED);
   draw("Meting loopt");
 // Document point 2
   // oranje led aan
@@ -130,7 +132,7 @@ void loop() {
   float result = resistanceOhm12And13 + resistanceOhm14And15 + resistanceOhm16And17 + resistanceOhm18And19 + resistanceOhm19And20
     + resistanceOhm62And63 + resistanceOhm64And65 + resistanceOhm66And67 + resistanceOhm68And69 + resistanceOhm69And70;
 
-  if (result < 10) {
+  if (result < MARGIN) {
     // show green led if success
     pinHighAndWait(GREEN_LED);
     draw("Klaar!");
@@ -140,52 +142,52 @@ void loop() {
     // calculate tresshold
     // tresshold 10 ohm
     String str = "";
-    if (resistanceOhm12And13 > 10) {
+    if (resistanceOhm12And13 > MARGIN) {
       str += "12/13";
     }
-    if (resistanceOhm16And17 > 10) {
+    if (resistanceOhm16And17 > MARGIN) {
       if (str != "")
-        str += ",";
+        str += " ";
       str += "16/17";
     }
-    if (resistanceOhm18And19 > 10) {
+    if (resistanceOhm18And19 > MARGIN) {
       if (str != "")
-        str += ",";
+        str += " ";
       str += "18/19";
     }
-    if (resistanceOhm14And15 > 10) {
+    if (resistanceOhm14And15 > MARGIN) {
       if (str != "")
-        str += ",";
+        str += " ";
       str += "14/15";
     }
-    if (resistanceOhm19And20 > 10) {
+    if (resistanceOhm19And20 > MARGIN) {
       if (str != "")
-        str += ",";
+        str += " ";
       str += "19/20";
     }
-    if (resistanceOhm62And63 > 10) {
+    if (resistanceOhm62And63 > MARGIN) {
       if (str != "")
-        str += ",";
+        str += " ";
       str += "62/63";
     }
-    if (resistanceOhm66And67 > 10) {
+    if (resistanceOhm66And67 > MARGIN) {
       if (str != "")
-        str += ",";
+        str += " ";
       str += "66/67";
     }
-    if (resistanceOhm68And69 > 10) {
+    if (resistanceOhm68And69 > MARGIN) {
       if (str != "")
-        str += ",";
+        str += " ";
       str += "68/69";
     }
-    if (resistanceOhm64And65 > 10) {
+    if (resistanceOhm64And65 > MARGIN) {
       if (str != "")
-        str += ",";
+        str += " ";
       str += "64/65";
     }
-    if (resistanceOhm69And70 > 10) {
+    if (resistanceOhm69And70 > MARGIN) {
         if (str != "")
-          str += ",";
+          str += " ";
         str += "69/70";
     }
 
@@ -202,11 +204,16 @@ bool readStartButton(const int startButtonPin) {
 
 void drawTwoLines(String line1, String line2) {
   u8g.firstPage();
-  u8g.setFont(u8g_font_unifont); // font instellen.
+  u8g.setFont(u8g_font_helvR08); // font instellen.
   do {
-    u8g.drawStr(10, 32, line1.c_str()); // print tekst.
-    u8g.drawStr(10, 52, line2.c_str()); // print tekst.
-  } while( u8g.nextPage() );
+    u8g.drawStr(10, 10, line1.c_str()); // print tekst.
+    if (line2.length() > 17) {
+      u8g.drawStr(10, 30, line2.substring(0, 16).c_str()); // print tekst. 
+      u8g.drawStr(10, 50, line2.substring(17).c_str()); // print tekst. 
+    } else {
+      u8g.drawStr(10, 30, line2.c_str()); // print tekst.
+    }
+  } while(u8g.nextPage());
 }
 
 void draw(String text) {
@@ -214,7 +221,7 @@ void draw(String text) {
   u8g.setFont(u8g_font_unifont); // font instellen.
   do {
     u8g.drawStr(10, 32, text.c_str()); // print tekst.
-  } while( u8g.nextPage() );
+  } while(u8g.nextPage());
 }
 
 void relaisOnAndWait(const int pin) {

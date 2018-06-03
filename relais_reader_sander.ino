@@ -76,12 +76,12 @@ void loop() {
   pinHighAndWait(ORANGE_LED);
 // Document point 3
 // Document point 3.a
-  Serial.println("measure relais 18/19 via A0");
   float resistanceOhm18And19 = calculateOhm(SERIAL_PORT_A0);
-  Serial.println("measure relais 16/17 via A1");
+  Serial.println("measured relais 18/19 via A0" + String(resistanceOhm18And19, 10));
   float resistanceOhm16And17 = calculateOhm(SERIAL_PORT_A1);
-  Serial.println("measure relais 12/13 via A2");
+  Serial.println("measured relais 16/17 via A1" + String(resistanceOhm16And17, 10));
   float resistanceOhm12And13 = calculateOhm(SERIAL_PORT_A2);
+  Serial.println("measured relais 12/13 via A2" + String(resistanceOhm12And13, 10));
   delay(STEP_DELAY);
 
 // Document point 3.b
@@ -90,10 +90,10 @@ void loop() {
   delay(STEP_DELAY);
 
 // Document point 3.c
-  Serial.println("measure relais 19/20 via A0");
   float resistanceOhm19And20 = calculateOhm(SERIAL_PORT_A0);
-  Serial.println("measure relais 14/15 via A1");
+  Serial.println("measured relais 19/20 via A0" + String(resistanceOhm19And20, 10));
   float resistanceOhm14And15 = calculateOhm(SERIAL_PORT_A1);
+  Serial.println("measured relais 14/15 via A1" + String(resistanceOhm14And15, 10));
   delay(STEP_DELAY);
 
 // Document point 3.d
@@ -108,12 +108,12 @@ void loop() {
   delay(STEP_DELAY);
 
 // Document point 3.f
-  Serial.println("measure relais 68/69 via A0");
   float resistanceOhm68And69 = calculateOhm(SERIAL_PORT_A0);
-  Serial.println("measure relais 66/67 via A1");
+  Serial.println("measured relais 68/69 via A0" + String(resistanceOhm68And69, 10));
   float resistanceOhm66And67 = calculateOhm(SERIAL_PORT_A1);
-  Serial.println("measure relais 62/63 via A2");
+  Serial.println("measured relais 66/67 via A1" + String(resistanceOhm66And67, 10));
   float resistanceOhm62And63 = calculateOhm(SERIAL_PORT_A2);
+  Serial.println("measured relais 62/63 via A2" + String(resistanceOhm62And63, 10));
   delay(STEP_DELAY);
 
   // Document point 3.g
@@ -123,11 +123,11 @@ void loop() {
   delay(STEP_DELAY);
 
   // Document point 3.h
-  Serial.println("measure relais 69/70 via A0");
-
-  float resistanceOhm69And70 = calculateOhm(SERIAL_PORT_A0);
-  Serial.println("measure relais 64/65 via A1");
+  float resistanceOhm69And70 = calculateOhm(SERIAL_PORT_A0);  
+  Serial.println("measured relais 69/70 via A0" + String(resistanceOhm69And70, 10));
+  
   float resistanceOhm64And65 = calculateOhm(SERIAL_PORT_A1);
+  Serial.println("measured relais 64/65 via A1" + String(resistanceOhm64And65, 10));
   delay(STEP_DELAY);
 
   Serial.println("Turn off relais");
@@ -142,6 +142,7 @@ void loop() {
 
   float result = resistanceOhm12And13 + resistanceOhm14And15 + resistanceOhm16And17 + resistanceOhm18And19 + resistanceOhm19And20
     + resistanceOhm62And63 + resistanceOhm64And65 + resistanceOhm66And67 + resistanceOhm68And69 + resistanceOhm69And70;
+  Serial.println("result" + String(result));
 
   if (result < MARGIN) {
     Serial.println("SUCCESS");

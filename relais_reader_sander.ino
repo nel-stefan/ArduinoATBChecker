@@ -27,6 +27,8 @@
 #define PIN_DELAY 500
 #define STEP_DELAY 1000
 
+bool startButtonNotPressedPrinted = false;
+
 U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_DEV_1); // Dev 0, Fast I2C / TWI
 
 void setup() {
@@ -52,7 +54,7 @@ void setup() {
 
   // turn on the green led to indicate the system is ready
   Serial.println("turn green led on and draw Start");
-  pinHighAndWait(GREEN_LED);
+  pinHigh(GREEN_LED);
   draw("Druk start");
 }
 
@@ -65,15 +67,20 @@ void setPinsAsOutput(const int pins[], int length) {
 
 void loop() {
   if (!readStartButton(START_BUTTON)) {
-      Serial.println("Start button not pressed");
+      if (!startButtonNotPressedPrinted) {
+        Serial.println("Start button not pressed");
+        startButtonNotPressedPrinted = true;
+      }
+      drawTwoLines("Test string", "18/19,29/29,30/20,10/20,10/99");
       return;
   }
+  startButtonNotPressedPrinted = false;
   Serial.println("start");
-  pinLowAndWait(RED_LED);
+  pinLow(RED_LED);
   draw("Meting loopt");
 // Document point 2
   Serial.println("draw on screen and turn ORANGE LED ON");
-  pinHighAndWait(ORANGE_LED);
+  pinHigh(ORANGE_LED);
 // Document point 3
 // Document point 3.a
   float resistanceOhm18And19 = calculateOhm(SERIAL_PORT_A0);
@@ -110,8 +117,12 @@ void loop() {
 // Document point 3.f
   float resistanceOhm68And69 = calculateOhm(SERIAL_PORT_A0);
   Serial.println("measured relais 68/69 via A0" + String(resistanceOhm68And69, 10));
+
   float resistanceOhm66And67 = calculateOhm(SERIAL_PORT_A1);
   Serial.println("measured relais 66/67 via A1" + String(resistanceOhm66And67, 10));
+  int tmp = analogRead(SERIAL_PORT_A1);
+  Serial.println("RAW: " + String(tmp));
+  
   float resistanceOhm62And63 = calculateOhm(SERIAL_PORT_A2);
   Serial.println("measured relais 62/63 via A2" + String(resistanceOhm62And63, 10));
   delay(STEP_DELAY);
@@ -138,7 +149,7 @@ void loop() {
   relaisOffAndWait(LOW_HIGH_CONTACT_SWITCH2);
   relaisOffAndWait(LOW_HIGH_CONTACT_SWITCH3);
 
-  pinLowAndWait(ORANGE_LED);
+  pinLow(ORANGE_LED);
 
   float result = resistanceOhm12And13 + resistanceOhm14And15 + resistanceOhm16And17 + resistanceOhm18And19 + resistanceOhm19And20
     + resistanceOhm62And63 + resistanceOhm64And65 + resistanceOhm66And67 + resistanceOhm68And69 + resistanceOhm69And70;
@@ -147,12 +158,12 @@ void loop() {
   if (result < MARGIN) {
     Serial.println("SUCCESS");
     // show green led if success
-    pinHighAndWait(GREEN_LED);
+    pinHigh(GREEN_LED);
     draw("Klaar!");
   }
   else {
     Serial.println("FAIL:");
-    pinHighAndWait(RED_LED);
+    pinHigh(RED_LED);
     String str = "";
     if (resistanceOhm12And13 > MARGIN) {
       str += "12/13";
@@ -226,12 +237,12 @@ void drawTwoLines(String line1, String line2) {
   u8g.firstPage();
   u8g.setFont(u8g_font_helvR08); // font instellen.
   do {
-    u8g.drawStr(10, 10, line1.c_str()); // print tekst.
+    u8g.drawStr(10, 25, line1.c_str()); // print tekst.
     if (line2.length() > 17) {
-      u8g.drawStr(10, 30, line2.substring(0, 16).c_str()); // print tekst. 
-      u8g.drawStr(10, 50, line2.substring(17).c_str()); // print tekst. 
+      u8g.drawStr(10, 41, line2.substring(0, 17).c_str()); // print tekst. 
+      u8g.drawStr(10, 57, line2.substring(18).c_str()); // print tekst. 
     } else {
-      u8g.drawStr(10, 30, line2.c_str()); // print tekst.
+      u8g.drawStr(10, 32, line2.c_str()); // print tekst.
     }
   } while(u8g.nextPage());
 }
@@ -245,21 +256,21 @@ void draw(String text) {
 }
 
 void relaisOnAndWait(const int pin) {
-  pinLowAndWait(pin);
+  pinLow(pin);
+  delay(PIN_DELAY);
 }
 
-void pinHighAndWait(const int pin) {
+void pinHigh(const int pin) {
   digitalWrite(pin, HIGH);       // sets the digital pin on
-  delay(PIN_DELAY);
 }
 
 void relaisOffAndWait(const int pin) {
-  pinHighAndWait(pin);
+  pinHigh(pin);
+  delay(PIN_DELAY);
 }
 
-void pinLowAndWait(const int pin) {
+void pinLow(const int pin) {
   digitalWrite(pin, LOW);       // sets the digital pin off
-  delay(PIN_DELAY);
 }
 
 float calculateOhm(const int analogPin) {
@@ -272,4 +283,3 @@ float calculateOhm(const int analogPin) {
   }
   return 0.0;
 }
-

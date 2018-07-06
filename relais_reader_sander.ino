@@ -226,10 +226,10 @@ void drawTwoLines(String line1, String line2) {
   u8g.firstPage();
   u8g.setFont(u8g_font_helvR08); // font instellen.
   do {
-    u8g.drawStr(10, 15, line1.c_str()); // print tekst.
+    u8g.drawStr(10, 10, line1.c_str()); // print tekst.
     if (line2.length() > 17) {
-      u8g.drawStr(10, 30, line2.substring(0, 17).c_str()); // print tekst. 
-      u8g.drawStr(10, 45, line2.substring(18).c_str()); // print tekst. 
+      u8g.drawStr(10, 30, line2.substring(0, 16).c_str()); // print tekst. 
+      u8g.drawStr(10, 50, line2.substring(17).c_str()); // print tekst. 
     } else {
       u8g.drawStr(10, 30, line2.c_str()); // print tekst.
     }
@@ -272,3 +272,4 @@ float calculateOhm(const int analogPin) {
   }
   return 0.0;
 }
+
